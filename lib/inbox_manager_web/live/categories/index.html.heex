@@ -1,0 +1,31 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <.header>
+    Listing Categories
+    <:actions>
+      <.link patch={~p"/categories/new"}>
+        <.button>New Category</.button>
+      </.link>
+    </:actions>
+  </.header>
+
+  <.table id="categories" rows={@categories} row_click={&JS.patch(~p"/categories/#{&1}")}>
+    <:col :let={category} label="Name">{category.name}</:col>
+    <:col :let={category} label="Description">{category.description}</:col>
+  </.table>
+</div>
+
+<.modal
+  :if={@live_action in [:new]}
+  id="vehicle-modal"
+  show
+  on_cancel={JS.navigate(~p"/categories")}
+>
+  <.live_component
+    module={InboxManagerWeb.Categories.FormComponent}
+    id={@category.id || :new}
+    title={@page_title}
+    action={@live_action}
+    category={@category}
+    navigate={~p"/categories"}
+  />
+</.modal>
