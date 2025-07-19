@@ -10,6 +10,8 @@ defmodule InboxManager.User do
     field :image, :string
     field :provider, :string
     field :token, :string
+    field :refresh_token, :string
+    field :last_known_history_id, :string
 
     timestamps()
   end
@@ -17,7 +19,17 @@ defmodule InboxManager.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:email, :first_name, :last_name, :location, :image, :provider, :token])
+    |> cast(attrs, [
+      :email,
+      :first_name,
+      :last_name,
+      :location,
+      :image,
+      :provider,
+      :token,
+      :refresh_token,
+      :last_known_history_id
+    ])
     |> validate_required([:email])
     |> unique_constraint(:email)
   end

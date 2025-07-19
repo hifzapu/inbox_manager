@@ -1,6 +1,7 @@
 defmodule InboxManagerWeb.AuthController do
   use InboxManagerWeb, :controller
   alias InboxManager.{User, Repo, AccountContext}
+  alias InboxManager.GmailClient
 
   plug Ueberauth
   require Logger
@@ -80,6 +81,7 @@ defmodule InboxManagerWeb.AuthController do
     case Repo.get_by(User, email: email) do
       nil ->
         Repo.insert(changeset)
+        GmailClient.setup_push_notifications(changeset.changes.token, email)
 
       user ->
         AccountContext.update_user(user, changeset.changes)

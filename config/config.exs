@@ -67,7 +67,9 @@ import_config "#{config_env()}.exs"
 
 config :ueberauth, Ueberauth,
   providers: [
-    google: {Ueberauth.Strategy.Google, [default_scope: "email profile"]}
+    google:
+      {Ueberauth.Strategy.Google,
+       [default_scope: "email profile https://www.googleapis.com/auth/gmail.readonly"]}
   ]
 
 config :ueberauth, Ueberauth.Strategy.Google.OAuth,

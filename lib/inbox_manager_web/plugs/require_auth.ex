@@ -5,7 +5,7 @@ defmodule InboxManagerWeb.Plugs.RequireAuth do
   def init(opts), do: opts
 
   def call(conn, _opts) do
-    if get_session(conn, :current_user) |> dbg() do
+    if get_session(conn, :current_user) do
       conn
     else
       conn
