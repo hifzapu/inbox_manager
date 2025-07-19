@@ -5,6 +5,7 @@ defmodule InboxManagerWeb.GmailWebhookController do
   alias InboxManager.Emails.EmailProcessor
   alias InboxManager.Repo
   alias InboxManager.User
+  alias InboxManager.Auth.TokenRefresher
   require Logger
 
   # Handle Gmail push notifications
@@ -64,15 +65,30 @@ defmodule InboxManagerWeb.GmailWebhookController do
   end
 
   defp process_new_emails_for_user(user, history_id) do
-    # Get the latest messages since the history_id
-    case GmailClient.get_messages_since_history(user.token, history_id) do
-      {:ok, message_ids} ->
-        Enum.each(message_ids, fn message_id ->
-          EmailProcessor.process_new_email(user.token, message_id)
-        end)
+    # Get valid access token (refresh if needed)
+    case get_valid_token(user) do
+      {:ok, valid_token} ->
+        # Get the latest messages since the history_id
+        case GmailClient.get_messages_since_history(valid_token, history_id) do
+          {:ok, message_ids} ->
+            Enum.each(message_ids, fn message_id ->
+              EmailProcessor.process_new_email(valid_token, message_id)
+            end)
+
+          {:error, error} ->
+            Logger.error("Failed to get latest messages for user #{user.email}: #{error}")
+        end
 
       {:error, error} ->
-        Logger.error("Failed to get latest messages for user #{user.email}: #{error}")
+        Logger.error("Failed to get valid token for user #{user.email}: #{error}")
+    end
+  end
+
+  # Get a valid access token, refreshing if necessary
+  defp get_valid_token(user) do
+    case TokenRefresher.ensure_valid_token(user) do
+      {:ok, updated_user} -> {:ok, updated_user.token}
+      {:error, reason} -> {:error, reason}
     end
   end
 
