@@ -12,6 +12,7 @@ defmodule InboxManager.Emails.Email do
     field :thread_id, :string
     field :date, :string
     belongs_to :category, InboxManager.Categories.Category
+    belongs_to :user, InboxManager.Users.User
 
     timestamps()
   end
@@ -28,7 +29,8 @@ defmodule InboxManager.Emails.Email do
       :snippet,
       :thread_id,
       :date,
-      :category_id
+      :category_id,
+      :user_id
     ])
     |> validate_required([:gmail_id, :subject, :from])
     |> unique_constraint(:gmail_id)

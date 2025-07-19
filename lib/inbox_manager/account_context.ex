@@ -1,5 +1,5 @@
 defmodule InboxManager.AccountContext do
-  alias InboxManager.User
+  alias InboxManager.Users.User
   alias InboxManager.Repo
 
   def create_user(attrs) do

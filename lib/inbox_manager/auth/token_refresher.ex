@@ -3,7 +3,8 @@ defmodule InboxManager.Auth.TokenRefresher do
   Module for refreshing OAuth tokens using Ueberauth Google
   """
 
-  alias InboxManager.{Repo, User}
+  alias InboxManager.Repo
+  alias InboxManager.Users.User
   require Logger
 
   @google_token_url "https://oauth2.googleapis.com/token"

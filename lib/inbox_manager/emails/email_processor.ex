@@ -8,9 +8,9 @@ defmodule InboxManager.Emails.EmailProcessor do
   alias InboxManager.Categories.Category
   alias InboxManager.Emails
 
-  def process_new_email(access_token, message_id) do
+  def process_new_email(access_token, message_id, user) do
     # Get the full message details from Gmail
-    case GmailClient.get_message_details(access_token, message_id) do
+    case GmailClient.get_message_details(access_token, message_id, user.email) do
       {:ok, message_data} ->
         # Extract email content and metadata
         email_data = extract_email_data(message_data)
@@ -19,7 +19,7 @@ defmodule InboxManager.Emails.EmailProcessor do
         category = categorize_email_with_ai(email_data)
 
         # Store the email in the database
-        store_email(email_data, category)
+        store_email(email_data, category, user.id)
 
         {:ok, email_data}
 
@@ -118,7 +118,7 @@ defmodule InboxManager.Emails.EmailProcessor do
     """
   end
 
-  defp store_email(email_data, category) do
+  defp store_email(email_data, category, user_id) do
     # Create the email record using the Emails context
     email_params = %{
       gmail_id: email_data.gmail_id,
@@ -129,7 +129,8 @@ defmodule InboxManager.Emails.EmailProcessor do
       snippet: email_data.snippet,
       thread_id: email_data.thread_id,
       date: email_data.date,
-      category_id: if(category, do: category.id, else: nil)
+      category_id: if(category, do: category.id, else: nil),
+      user_id: user_id
     }
 
     Emails.create_email(email_params)

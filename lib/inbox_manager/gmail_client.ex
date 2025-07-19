@@ -3,8 +3,8 @@ defmodule InboxManager.GmailClient do
 
   # Set up Gmail push notifications for real-time email alerts
 
-  def get_message_details(access_token, message_id) do
-    url = "#{@gmail_api_url}/me/messages/#{message_id}"
+  def get_message_details(access_token, message_id, user_email \\ "me") do
+    url = "#{@gmail_api_url}/#{user_email}/messages/#{message_id}"
 
     headers = build_headers(access_token)
 

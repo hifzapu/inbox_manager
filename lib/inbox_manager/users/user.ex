@@ -1,4 +1,4 @@
-defmodule InboxManager.User do
+defmodule InboxManager.Users.User do
   use Ecto.Schema
   import Ecto.Changeset
 

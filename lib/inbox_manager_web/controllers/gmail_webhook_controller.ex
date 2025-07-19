@@ -4,7 +4,7 @@ defmodule InboxManagerWeb.GmailWebhookController do
   alias InboxManager.GmailClient
   alias InboxManager.Emails.EmailProcessor
   alias InboxManager.Repo
-  alias InboxManager.User
+  alias InboxManager.Users.User
   alias InboxManager.Auth.TokenRefresher
   require Logger
 
@@ -72,7 +72,7 @@ defmodule InboxManagerWeb.GmailWebhookController do
         case GmailClient.get_messages_since_history(valid_token, history_id) do
           {:ok, message_ids} ->
             Enum.each(message_ids, fn message_id ->
-              EmailProcessor.process_new_email(valid_token, message_id)
+              EmailProcessor.process_new_email(valid_token, message_id, user)
             end)
 
           {:error, error} ->
