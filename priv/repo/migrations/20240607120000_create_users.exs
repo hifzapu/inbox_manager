@@ -11,6 +11,7 @@ defmodule InboxManager.Repo.Migrations.CreateUsers do
       add :provider, :string
       add :token, :string
       add :refresh_token, :string
+      add :token_expires_at, :bigint
       add :last_known_history_id, :string
 
       timestamps()

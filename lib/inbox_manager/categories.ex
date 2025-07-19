@@ -10,8 +10,8 @@ defmodule InboxManager.Categories do
   @doc """
   Returns the list of vehicles.
   """
-  def list_categories do
-    Repo.all(Category)
+  def list_categories(user_id) do
+    Repo.all(from c in Category, where: c.user_id == ^user_id)
   end
 
   @doc """

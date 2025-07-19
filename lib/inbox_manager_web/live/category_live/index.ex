@@ -5,8 +5,13 @@ defmodule InboxManagerWeb.Categories.Index do
   alias InboxManager.Categories.Category
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:categories, Categories.list_categories())}
+  def mount(_params, session, socket) do
+    current_user = session["current_user"]
+
+    {:ok,
+     socket
+     |> assign(:categories, Categories.list_categories(current_user.id))
+     |> assign(:current_user, current_user)}
   end
 
   @impl true

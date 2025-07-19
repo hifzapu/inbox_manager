@@ -12,6 +12,7 @@ defmodule InboxManager.User do
     field :token, :string
     field :refresh_token, :string
     field :last_known_history_id, :string
+    field :token_expires_at, :integer
 
     timestamps()
   end
@@ -28,7 +29,8 @@ defmodule InboxManager.User do
       :provider,
       :token,
       :refresh_token,
-      :last_known_history_id
+      :last_known_history_id,
+      :token_expires_at
     ])
     |> validate_required([:email])
     |> unique_constraint(:email)

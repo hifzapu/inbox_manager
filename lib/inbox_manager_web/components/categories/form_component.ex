@@ -50,6 +50,8 @@ defmodule InboxManagerWeb.Categories.FormComponent do
   end
 
   defp save_category(socket, :new, category_params) do
+    category_params = Map.put(category_params, "user_id", socket.assigns.current_user.id)
+
     case Categories.create_category(category_params) do
       {:ok, _category} ->
         {:noreply,

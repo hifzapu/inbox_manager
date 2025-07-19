@@ -69,7 +69,11 @@ config :ueberauth, Ueberauth,
   providers: [
     google:
       {Ueberauth.Strategy.Google,
-       [default_scope: "email profile https://www.googleapis.com/auth/gmail.readonly"]}
+       [
+         default_scope: "email profile https://www.googleapis.com/auth/gmail.readonly",
+         access_type: "offline",
+         include_granted_scopes: true
+       ]}
   ]
 
 config :ueberauth, Ueberauth.Strategy.Google.OAuth,

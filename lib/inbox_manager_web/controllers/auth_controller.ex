@@ -17,7 +17,8 @@ defmodule InboxManagerWeb.AuthController do
 
       %{
         ueberauth_auth: %{
-          credentials: %{token: token},
+          credentials:
+            %{token: token, refresh_token: refresh_token, expires_at: expires_at} = credentails,
           info: %{
             email: email,
             first_name: first_name,
@@ -28,6 +29,8 @@ defmodule InboxManagerWeb.AuthController do
           provider: provider
         }
       } ->
+        dbg(credentails)
+
         changeset =
           User.changeset(
             %User{},
@@ -38,7 +41,9 @@ defmodule InboxManagerWeb.AuthController do
               location: location,
               image: image,
               provider: Atom.to_string(provider),
-              token: token
+              token: token,
+              refresh_token: refresh_token,
+              token_expires_at: expires_at
             }
           )
 

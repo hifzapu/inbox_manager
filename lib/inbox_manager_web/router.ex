@@ -8,7 +8,6 @@ defmodule InboxManagerWeb.Router do
     plug :put_root_layout, html: {InboxManagerWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug InboxManagerWeb.Plugs.FetchSessionUser
   end
 
   pipeline :api do
