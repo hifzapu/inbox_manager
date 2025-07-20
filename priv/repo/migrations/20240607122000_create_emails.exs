@@ -9,6 +9,7 @@ defmodule InboxManager.Repo.Migrations.CreateEmails do
       add :to, :string
       add :body, :text
       add :snippet, :text
+      add :description, :text
       add :thread_id, :string
       add :date, :string
       add :category_id, references(:categories, on_delete: :nilify_all)

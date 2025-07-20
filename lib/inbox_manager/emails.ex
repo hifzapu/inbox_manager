@@ -19,6 +19,7 @@ defmodule InboxManager.Emails do
     )
   end
 
+  @spec list_emails_by_category(any()) :: any()
   @doc """
   Returns the list of emails filtered by category.
   """

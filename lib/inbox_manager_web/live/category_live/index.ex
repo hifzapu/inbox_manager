@@ -1,4 +1,4 @@
-defmodule InboxManagerWeb.Categories.Index do
+defmodule InboxManagerWeb.CategoryLive.Index do
   use InboxManagerWeb, :live_view
 
   alias InboxManager.Categories

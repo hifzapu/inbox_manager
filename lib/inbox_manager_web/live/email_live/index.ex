@@ -5,56 +5,50 @@ defmodule InboxManagerWeb.EmailLive.Index do
   alias InboxManager.Categories
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
     # Subscribe to email updates
     if connected?(socket) do
       Phoenix.PubSub.subscribe(InboxManager.PubSub, "email:new")
     end
 
-    # Get initial emails
-    emails = Emails.list_emails()
-    categories = Categories.list_categories()
+    # Get current user from session
+    current_user = session["current_user"]
+
+    # Get initial emails for the current user
 
     socket =
       socket
-      |> assign(:emails, emails)
-      |> assign(:categories, categories)
       |> assign(:selected_category, nil)
       |> assign(:loading, false)
+      |> assign(:user_id, current_user.id)
 
     {:ok, socket}
   end
 
   @impl true
-  def handle_params(params, _url, socket) do
-    category_id = params["category_id"]
+  def handle_params(%{"category_id" => category_id}, _url, socket) do
+    # Load emails for the specific category
+    emails = Emails.list_emails_by_category(category_id)
+    category = Categories.get_category!(category_id)
 
     socket =
       socket
-      |> assign(:selected_category, category_id)
+      |> assign(:emails, emails)
+      |> assign(:selected_category, category)
+      |> assign(:selected_category_id, category_id)
       |> assign(:page_title, "Emails")
 
     {:noreply, socket}
   end
 
   @impl true
-  def handle_event("filter-by-category", %{"category-id" => category_id}, socket) do
-    emails =
-      if category_id == "" do
-        Emails.list_emails()
-      else
-        Emails.list_emails_by_category(category_id)
-      end
-
-    {:noreply,
-     socket
-     |> assign(:emails, emails)
-     |> assign(:selected_category, category_id)}
+  def handle_event("navigate", %{"to" => path}, socket) do
+    {:noreply, push_navigate(socket, to: path)}
   end
 
   @impl true
   def handle_event("refresh", _params, socket) do
-    emails = Emails.list_emails()
+    emails = Emails.list_emails_by_category(socket.assigns.selected_category_id)
 
     {:noreply,
      socket
@@ -64,14 +58,13 @@ defmodule InboxManagerWeb.EmailLive.Index do
 
   # Handle real-time email updates
   @impl true
-  def handle_info(%{event: "email:new", payload: %{email: email, category: category}}, socket) do
+  def handle_info(%{event: "email:new", email: email}, socket) do
     # Add the new email to the list
-    updated_emails = [email | socket.assigns.emails]
-
+    emails = Emails.list_emails_by_category(socket.assigns.selected_category_id)
     # Show a flash message
     socket =
       socket
-      |> assign(:emails, updated_emails)
+      |> assign(:emails, emails)
       |> put_flash(:info, "New email received: #{email.subject}")
 
     {:noreply, socket}
@@ -91,7 +84,7 @@ defmodule InboxManagerWeb.EmailLive.Index do
     end
   end
 
-  defp truncate_text(text, max_length \\ 100) do
+  defp truncate_text(text, max_length) do
     if String.length(text) > max_length do
       String.slice(text, 0, max_length) <> "..."
     else

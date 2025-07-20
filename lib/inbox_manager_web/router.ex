@@ -28,9 +28,10 @@ defmodule InboxManagerWeb.Router do
   scope "/", InboxManagerWeb do
     pipe_through [:browser, InboxManagerWeb.Plugs.RequireAuth]
 
-    live "/categories", Categories.Index, :index
-    live "/categories/new", Categories.Index, :new
     live "/emails", EmailLive.Index, :index
+    live "/categories", CategoryLive.Index, :index
+    live "/categories/new", CategoryLive.Index, :new
+    live "/categories/:category_id", EmailLive.Index, :index
   end
 
   scope "/auth", InboxManagerWeb do

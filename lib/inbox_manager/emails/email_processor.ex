@@ -17,11 +17,14 @@ defmodule InboxManager.Emails.EmailProcessor do
         # Extract email content and metadata
         email_data = extract_email_data(message_data)
 
+        # Generate AI description for the email
+        description = generate_email_description(email_data)
+
         # Categorize the email using AI
         category = categorize_email_with_ai(email_data, user.id)
 
-        # Store the email in the database
-        store_email(email_data, category, user.id)
+        # Store the email in the database with description
+        store_email(email_data, category, user.id, description)
 
         {:ok, email_data}
 
@@ -99,7 +102,7 @@ defmodule InboxManager.Emails.EmailProcessor do
     case GroqClient.categorize_with_groq(prompt) do
       category_name ->
         # Find the category by name
-        case Enum.find(categories, fn category -> category.name == category_name end) do
+        case Enum.find(categories, fn category -> "#{category.name}" == "#{category_name}" end) do
           nil ->
             # If no category found, create a new "Other" category
             create_or_find_other_category(user_id)
@@ -131,21 +134,24 @@ defmodule InboxManager.Emails.EmailProcessor do
 
   defp create_or_find_other_category(user_id) do
     # Try to find existing "Other" category first
-    case Categories.get_category_by_name("Other", user_id) do
+    case Categories.get_category_by_name("Others", user_id) do
       nil ->
         # Create new "Other" category if it doesn't exist
-        Categories.create_category(%{
-          name: "Other",
-          description: "Miscellaneous emails that don't fit other categories",
-          user_id: user_id
-        })
+        {:ok, category} =
+          Categories.create_category(%{
+            name: "Others",
+            description: "Miscellaneous emails that don't fit other categories",
+            user_id: user_id
+          })
+
+        category
 
       category ->
         category
     end
   end
 
-  defp store_email(email_data, category, user_id) do
+  defp store_email(email_data, category, user_id, description) do
     # Create the email record using the Emails context
     email_params = %{
       gmail_id: email_data.gmail_id,
@@ -157,9 +163,50 @@ defmodule InboxManager.Emails.EmailProcessor do
       thread_id: email_data.thread_id,
       date: email_data.date,
       category_id: if(category, do: category.id, else: nil),
-      user_id: user_id
+      user_id: user_id,
+      description: description
     }
 
-    Emails.create_email(email_params)
+    case Emails.create_email(email_params) do
+      {:ok, email} ->
+        # Broadcast the new email to all connected clients
+        Phoenix.PubSub.broadcast(
+          InboxManager.PubSub,
+          "email:new",
+          %{
+            event: "email:new",
+            email: email
+          }
+        )
+
+        {:ok, email}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  defp generate_email_description(email_data) do
+    # Create a prompt for AI description generation
+    prompt = """
+    Please provide a clear, descriptive explanation of what this email is about in 10-25 words:
+
+    Subject: #{email_data.subject}
+    From: #{email_data.from}
+    To: #{email_data.to}
+    Content: #{email_data.body}
+
+    Explain the main purpose, key points, or what the sender is trying to communicate.
+    Make it informative enough that someone can understand what the email is about without reading it.
+    """
+
+    case GroqClient.categorize_with_groq(prompt) do
+      description when is_binary(description) ->
+        description
+
+      _ ->
+        # Fallback description if AI fails
+        "Email about #{email_data.subject} from #{email_data.from}"
+    end
   end
 end
