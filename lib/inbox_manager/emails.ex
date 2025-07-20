@@ -64,6 +64,14 @@ defmodule InboxManager.Emails do
   end
 
   @doc """
+  Deletes multiple emails by their IDs.
+  """
+  def delete_emails_by_ids(email_ids) when is_list(email_ids) do
+    from(e in Email, where: e.id in ^email_ids)
+    |> Repo.delete_all()
+  end
+
+  @doc """
   Returns an `%Ecto.Changeset{}` for tracking email changes.
   """
   def change_email(%Email{} = email, attrs \\ %{}) do

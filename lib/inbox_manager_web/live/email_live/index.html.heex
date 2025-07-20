@@ -6,9 +6,45 @@
   
 <!-- Controls -->
   <div class="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-    <div class="flex gap-4 items-center">
+    <div class="flex flex-col gap-4">
       <!-- Category Filter -->
       <h1 class="text-2xl font-bold text-gray-900">{@selected_category.name}</h1>
+      
+<!-- Selection Controls -->
+      <%= if length(@emails) > 0 do %>
+        <div class="flex items-center gap-4">
+          <!-- Select All Checkbox -->
+          <label class="flex items-center">
+            <input
+              type="checkbox"
+              checked={@select_all}
+              phx-click="select_all"
+              class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            />
+            <span class="ml-2 text-sm text-gray-700">Select All</span>
+          </label>
+          
+<!-- Delete Selected Button -->
+          <%= if MapSet.size(@selected_emails) > 0 do %>
+            <button
+              phx-click="delete_selected"
+              data-confirm="Are you sure you want to delete #{MapSet.size(@selected_emails)} selected email(s)?"
+              class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            >
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                >
+                </path>
+              </svg>
+              Delete Selected ({MapSet.size(@selected_emails)})
+            </button>
+          <% end %>
+        </div>
+      <% end %>
     </div>
     
 <!-- Refresh Button -->
@@ -53,8 +89,22 @@
     <% else %>
       <ul class="divide-y divide-gray-200">
         <%= for email <- @emails do %>
-          <li class="px-6 py-4 hover:bg-gray-50">
+          <% is_selected = MapSet.member?(@selected_emails, email.id) %>
+          <li class={"px-6 py-4 #{if is_selected, do: "bg-indigo-50 border-l-4 border-indigo-400", else: "hover:bg-gray-50"}"}>
             <div class="flex items-center justify-between">
+              <!-- Email Selection Checkbox -->
+              <div class="flex items-center mr-4">
+                <input
+                  type="checkbox"
+                  id={"email-#{email.id}"}
+                  value={email.id}
+                  checked={is_selected}
+                  phx-click="select_email"
+                  phx-value-id={email.id}
+                  class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                />
+              </div>
+
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <p class="text-sm font-medium text-gray-900 truncate">
@@ -72,15 +122,10 @@
                 </div>
                 <%= if email.description && email.description != "" do %>
                   <p class="mt-1 text-sm text-gray-600">
-                    {truncate_text(email.description, 150)}
+                    {email.description}
                   </p>
                 <% end %>
               </div>
-              <%!-- <div class="ml-4 flex-shrink-0">
-                <button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
-                  View
-                </button>
-              </div> --%>
             </div>
           </li>
         <% end %>

@@ -23,7 +23,10 @@ defmodule InboxManager.Categories do
   Gets a category by name and user_id.
   """
   def get_category_by_name(name, user_id) do
-    Repo.get_by(Category, name: name, user_id: user_id)
+    from(c in Category,
+      where: c.user_id == ^user_id and fragment("LOWER(?)", c.name) == ^String.downcase(name)
+    )
+    |> Repo.one()
   end
 
   @doc """

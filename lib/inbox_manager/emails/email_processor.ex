@@ -5,8 +5,6 @@ defmodule InboxManager.Emails.EmailProcessor do
 
   alias InboxManager.ApiClients.GmailClient
   alias InboxManager.ApiClients.GroqClient
-  alias InboxManager.Repo
-  alias InboxManager.Categories.Category
   alias InboxManager.Emails
   alias InboxManager.Categories
 
@@ -133,13 +131,17 @@ defmodule InboxManager.Emails.EmailProcessor do
   end
 
   defp create_or_find_other_category(user_id) do
-    # Try to find existing "Other" category first
-    case Categories.get_category_by_name("Others", user_id) do
+    # Try to find existing "Other" or "Others" category first
+    other_category =
+      Categories.get_category_by_name("Other", user_id) ||
+        Categories.get_category_by_name("Others", user_id)
+
+    case other_category do
       nil ->
         # Create new "Other" category if it doesn't exist
         {:ok, category} =
           Categories.create_category(%{
-            name: "Others",
+            name: "Other",
             description: "Miscellaneous emails that don't fit other categories",
             user_id: user_id
           })
@@ -189,7 +191,7 @@ defmodule InboxManager.Emails.EmailProcessor do
   defp generate_email_description(email_data) do
     # Create a prompt for AI description generation
     prompt = """
-    Please provide a clear, descriptive explanation of what this email is about in 10-25 words:
+    Please provide a clear, descriptive explanation of what this email is about in 10-15 words:
 
     Subject: #{email_data.subject}
     From: #{email_data.from}
@@ -200,7 +202,7 @@ defmodule InboxManager.Emails.EmailProcessor do
     Make it informative enough that someone can understand what the email is about without reading it.
     """
 
-    case GroqClient.categorize_with_groq(prompt) do
+    case GroqClient.generate_description_with_groq(prompt) do
       description when is_binary(description) ->
         description
 
