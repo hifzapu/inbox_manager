@@ -10,7 +10,6 @@ defmodule InboxManager.Repo.Migrations.CreateCategories do
       timestamps()
     end
 
-    create unique_index(:categories, [:name])
     create index(:categories, [:user_id])
   end
 end

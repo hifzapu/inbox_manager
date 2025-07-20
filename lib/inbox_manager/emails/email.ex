@@ -32,7 +32,8 @@ defmodule InboxManager.Emails.Email do
       :category_id,
       :user_id
     ])
-    |> validate_required([:gmail_id, :subject, :from])
+    |> validate_required([:gmail_id, :subject, :from, :user_id])
     |> unique_constraint(:gmail_id)
+    |> foreign_key_constraint(:user_id)
   end
 end

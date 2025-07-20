@@ -1,4 +1,4 @@
-defmodule InboxManager.GmailClient do
+defmodule InboxManager.ApiClients.GmailClient do
   @gmail_api_url "https://gmail.googleapis.com/gmail/v1/users"
 
   # Set up Gmail push notifications for real-time email alerts

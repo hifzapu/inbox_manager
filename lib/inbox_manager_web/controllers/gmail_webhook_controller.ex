@@ -1,7 +1,7 @@
 defmodule InboxManagerWeb.GmailWebhookController do
   use InboxManagerWeb, :controller
 
-  alias InboxManager.GmailClient
+  alias InboxManager.ApiClients.GmailClient
   alias InboxManager.Emails.EmailProcessor
   alias InboxManager.Repo
   alias InboxManager.Users.User

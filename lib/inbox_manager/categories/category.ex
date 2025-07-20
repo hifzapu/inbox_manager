@@ -15,7 +15,6 @@ defmodule InboxManager.Categories.Category do
     category
     |> cast(attrs, [:name, :description, :user_id])
     |> validate_required([:name, :user_id])
-    |> unique_constraint(:name)
     |> foreign_key_constraint(:user_id)
   end
 end

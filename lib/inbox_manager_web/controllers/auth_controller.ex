@@ -2,7 +2,7 @@ defmodule InboxManagerWeb.AuthController do
   use InboxManagerWeb, :controller
   alias InboxManager.Users.User
   alias InboxManager.{AccountContext, Repo}
-  alias InboxManager.GmailClient
+  alias InboxManager.ApiClients.GmailClient
 
   plug Ueberauth
   require Logger

@@ -20,6 +20,13 @@ defmodule InboxManager.Categories do
   def get_category!(id), do: Repo.get!(Category, id)
 
   @doc """
+  Gets a category by name and user_id.
+  """
+  def get_category_by_name(name, user_id) do
+    Repo.get_by(Category, name: name, user_id: user_id)
+  end
+
+  @doc """
   Creates a user.
   """
   def create_category(attrs \\ %{}) do

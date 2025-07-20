@@ -3,10 +3,12 @@ defmodule InboxManager.Emails.EmailProcessor do
   Service for processing new emails, categorizing them with AI, and storing them.
   """
 
-  alias InboxManager.GmailClient
+  alias InboxManager.ApiClients.GmailClient
+  alias InboxManager.ApiClients.GroqClient
   alias InboxManager.Repo
   alias InboxManager.Categories.Category
   alias InboxManager.Emails
+  alias InboxManager.Categories
 
   def process_new_email(access_token, message_id, user) do
     # Get the full message details from Gmail
@@ -16,7 +18,7 @@ defmodule InboxManager.Emails.EmailProcessor do
         email_data = extract_email_data(message_data)
 
         # Categorize the email using AI
-        category = categorize_email_with_ai(email_data)
+        category = categorize_email_with_ai(email_data, user.id)
 
         # Store the email in the database
         store_email(email_data, category, user.id)
@@ -87,18 +89,24 @@ defmodule InboxManager.Emails.EmailProcessor do
     end
   end
 
-  defp categorize_email_with_ai(email_data) do
+  def categorize_email_with_ai(email_data, user_id) do
     # Get all categories from the database
-    categories = Repo.all(Category)
+    categories = Categories.list_categories(user_id)
 
     # Create a prompt for AI categorization
     prompt = create_categorization_prompt(email_data, categories)
 
-    # TODO: Integrate with your AI service (OpenAI, Anthropic, etc.)
-    # For now, return a default category or the first available one
-    case categories do
-      [first_category | _] -> first_category
-      [] -> nil
+    case GroqClient.categorize_with_groq(prompt) do
+      category_name ->
+        # Find the category by name
+        case Enum.find(categories, fn category -> category.name == category_name end) do
+          nil ->
+            # If no category found, create a new "Other" category
+            create_or_find_other_category(user_id)
+
+          category ->
+            category
+        end
     end
   end
 
@@ -115,10 +123,26 @@ defmodule InboxManager.Emails.EmailProcessor do
 
     Email Subject: #{email_data.subject}
     Email From: #{email_data.from}
-    Email Snippet: #{email_data.snippet}
+    Email Body: #{email_data.body}
 
     Return only the category name that best fits this email.
     """
+  end
+
+  defp create_or_find_other_category(user_id) do
+    # Try to find existing "Other" category first
+    case Categories.get_category_by_name("Other", user_id) do
+      nil ->
+        # Create new "Other" category if it doesn't exist
+        Categories.create_category(%{
+          name: "Other",
+          description: "Miscellaneous emails that don't fit other categories",
+          user_id: user_id
+        })
+
+      category ->
+        category
+    end
   end
 
   defp store_email(email_data, category, user_id) do

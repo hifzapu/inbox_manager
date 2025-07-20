@@ -79,3 +79,7 @@ config :ueberauth, Ueberauth,
 config :ueberauth, Ueberauth.Strategy.Google.OAuth,
   client_id: "1099192373321-tggn4htol6q85p45l5jlv92e8b6fmk9q.apps.googleusercontent.com",
   client_secret: "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"
+
+config :inbox_manager,
+       :deepseek_api_key,
+       "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"
