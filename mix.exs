@@ -62,7 +62,8 @@ defmodule InboxManager.MixProject do
       {:ueberauth, "~> 0.10"},
       {:ueberauth_google, "~> 0.10"},
       {:goth, "~> 1.3"},
-      {:httpoison, "~> 2.0"}
+      {:httpoison, "~> 2.0"},
+      {:oban, "~> 2.18"}
     ]
   end
 

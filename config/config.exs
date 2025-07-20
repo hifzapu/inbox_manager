@@ -61,6 +61,19 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# Configure Oban for background job processing
+config :inbox_manager, Oban,
+  repo: InboxManager.Repo,
+  queues: [default: 5],
+  plugins: [
+    {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7},
+    {Oban.Plugins.Cron,
+     crontab: [
+       {"0 0 * * *", InboxManager.Workers.DailyWatchRefreshWorker}
+     ]}
+  ],
+  queues: [default: 10, mailers: 10]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

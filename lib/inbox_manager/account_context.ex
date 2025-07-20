@@ -2,6 +2,10 @@ defmodule InboxManager.AccountContext do
   alias InboxManager.Users.User
   alias InboxManager.Repo
 
+  def list_users do
+    Repo.all(User)
+  end
+
   def create_user(attrs) do
     %User{}
     |> User.changeset(attrs)

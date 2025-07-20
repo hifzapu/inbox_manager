@@ -14,6 +14,8 @@ defmodule InboxManager.Application do
       {Phoenix.PubSub, name: InboxManager.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: InboxManager.Finch},
+      # Start Oban for background job processing
+      {Oban, Application.fetch_env!(:inbox_manager, Oban)},
       # Start a worker by calling: InboxManager.Worker.start_link(arg)
       # {InboxManager.Worker, arg},
       # Start to serve requests, typically the last entry
