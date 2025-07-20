@@ -68,16 +68,21 @@ defmodule InboxManager.GmailClient do
 
   # Get history changes since a specific history ID
   def get_history_changes(access_token, history_id, user_email \\ "me") do
-    url = "#{@gmail_api_url}/#{user_email}/history"
+    base_url = "#{@gmail_api_url}/#{user_email}/history"
+
+    # Build query parameters manually to handle labelIds properly
+    query_params =
+      URI.encode_query(%{
+        "startHistoryId" => history_id,
+        "historyTypes" => "messageAdded",
+        "labelIds" => "INBOX"
+      })
+
+    url = "#{base_url}?#{query_params}"
 
     headers = build_headers(access_token)
 
-    params = %{
-      startHistoryId: history_id,
-      historyTypes: "messageAdded"
-    }
-
-    case HTTPoison.get(url, headers, params: params) do
+    case HTTPoison.get(url, headers) do
       {:ok, %{body: body}} ->
         Jason.decode(body)
 
@@ -100,7 +105,9 @@ defmodule InboxManager.GmailClient do
           end)
           |> Enum.uniq()
 
-        {:ok, message_ids}
+        # Filter to only include messages that are in the INBOX (received emails)
+        filtered_message_ids = filter_incoming_messages(access_token, message_ids, user_email)
+        {:ok, filtered_message_ids}
 
       {:ok, _} ->
         {:ok, []}
@@ -108,6 +115,26 @@ defmodule InboxManager.GmailClient do
       {:error, error} ->
         {:error, error}
     end
+  end
+
+  # Get only incoming messages since a specific history ID
+  def get_incoming_messages_since_history(access_token, history_id, user_email \\ "me") do
+    get_messages_since_history(access_token, history_id, user_email)
+  end
+
+  # Filter messages to only include those in the INBOX (received emails)
+  defp filter_incoming_messages(access_token, message_ids, user_email) do
+    message_ids
+    |> Enum.filter(fn message_id ->
+      case get_message_details(access_token, message_id, user_email) do
+        {:ok, %{"labelIds" => label_ids}} ->
+          # Only include messages that have the INBOX label (received emails)
+          "INBOX" in label_ids
+
+        _ ->
+          false
+      end
+    end)
   end
 
   defp build_headers(access_token) do

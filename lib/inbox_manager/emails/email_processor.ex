@@ -64,7 +64,10 @@ defmodule InboxManager.Emails.EmailProcessor do
   defp extract_body_content(payload) do
     case payload do
       %{"body" => %{"data" => data}} when is_binary(data) ->
-        case Base.decode64(data) do
+        case data
+             |> String.replace("-", "+")
+             |> String.replace("_", "/")
+             |> Base.decode64() do
           {:ok, decoded} -> decoded
           :error -> ""
         end

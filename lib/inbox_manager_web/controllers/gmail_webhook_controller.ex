@@ -47,7 +47,7 @@ defmodule InboxManagerWeb.GmailWebhookController do
     case get_user_by_email(email) do
       {:ok, user} ->
         InboxManager.AccountContext.update_user_by_email(email, %{
-          last_known_history_id: history_id
+          last_known_history_id: Integer.to_string(history_id)
         })
 
         process_new_emails_for_user(user, user.last_known_history_id)
