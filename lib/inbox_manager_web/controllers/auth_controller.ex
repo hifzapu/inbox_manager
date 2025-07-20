@@ -76,7 +76,7 @@ defmodule InboxManagerWeb.AuthController do
     conn
     |> put_flash(:info, "You have been logged out!")
     |> configure_session(drop: true)
-    |> redirect(external: InboxManager.Auth0.logout_redirect_url())
+    |> redirect(to: "/")
   end
 
   defp upsert(changeset) do

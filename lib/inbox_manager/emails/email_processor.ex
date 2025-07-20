@@ -24,6 +24,9 @@ defmodule InboxManager.Emails.EmailProcessor do
         # Store the email in the database with description
         store_email(email_data, category, user.id, description)
 
+        # Archive the email in Gmail
+        GmailClient.archive_email(access_token, message_id, user.email)
+
         {:ok, email_data}
 
       {:error, error} ->

@@ -32,6 +32,7 @@ defmodule InboxManagerWeb.Router do
     live "/categories", CategoryLive.Index, :index
     live "/categories/new", CategoryLive.Index, :new
     live "/categories/:category_id", EmailLive.Index, :index
+    get "/logout", AuthController, :logout
   end
 
   scope "/auth", InboxManagerWeb do

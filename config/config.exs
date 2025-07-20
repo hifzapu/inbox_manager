@@ -83,7 +83,7 @@ config :ueberauth, Ueberauth,
     google:
       {Ueberauth.Strategy.Google,
        [
-         default_scope: "email profile https://www.googleapis.com/auth/gmail.readonly",
+         default_scope: "email profile https://www.googleapis.com/auth/gmail.modify",
          access_type: "offline",
          include_granted_scopes: true
        ]}

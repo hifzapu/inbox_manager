@@ -17,6 +17,29 @@ defmodule InboxManager.ApiClients.GmailClient do
     end
   end
 
+  def archive_email(access_token, message_id, user_email \\ "me") do
+    url = "#{@gmail_api_url}/#{user_email}/messages/#{message_id}/modify"
+
+    headers = [
+      {"Authorization", "Bearer #{access_token}"},
+      {"Content-Type", "application/json"}
+    ]
+
+    # Remove INBOX label to archive
+    body =
+      Jason.encode!(%{
+        "removeLabelIds" => ["INBOX"]
+      })
+
+    case HTTPoison.post(url, body, headers) do
+      {:ok, %{body: response_body}} ->
+        {:ok, Jason.decode(response_body)}
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
   def setup_push_notifications(access_token, user_email \\ "me") do
     url = "#{@gmail_api_url}/#{user_email}/watch"
 
