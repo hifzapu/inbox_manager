@@ -19,7 +19,12 @@ ARG DEBIAN_VERSION=bookworm-20250317
 ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
 ARG RUNNER_IMAGE="debian:bookworm"
 
+ARG MIX_ENV=prod
+
 FROM ${BUILDER_IMAGE} as builder
+
+ARG MIX_ENV
+ENV MIX_ENV=${MIX_ENV}
 
 # install build dependencies
 RUN apt-get update -y && apt-get install -y build-essential git \
@@ -43,7 +48,7 @@ RUN mix local.hex --force && \
     mix local.rebar --force
 
 # set build ENV
-ENV MIX_ENV="prod"
+# ENV MIX_ENV="prod" # This line is now redundant as MIX_ENV is passed as an argument
 
 # install mix dependencies
 COPY mix.exs mix.lock ./
@@ -78,6 +83,9 @@ RUN mix release
 # the compiled release and other runtime necessities
 FROM ${RUNNER_IMAGE}
 
+ARG MIX_ENV=prod
+ENV MIX_ENV=${MIX_ENV}
+
 RUN apt-get update -y && apt-get install -y libstdc++6 openssl libncurses5 locales \
   && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
@@ -92,7 +100,6 @@ WORKDIR "/app"
 RUN chown nobody /app
 
 # set runner ENV
-# ENV MIX_ENV="prod"
 ENV PORT=8080
 ENV PHX_HOST=inbox-manager.fly.dev
 
