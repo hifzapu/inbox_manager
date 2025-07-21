@@ -26,12 +26,17 @@ defmodule InboxManagerWeb.Router do
   end
 
   scope "/", InboxManagerWeb do
-    pipe_through [:browser, InboxManagerWeb.Plugs.RequireAuth]
+    pipe_through [
+      :browser,
+      InboxManagerWeb.Plugs.RequireAuth,
+      InboxManagerWeb.Plugs.AssignCurrentUser
+    ]
 
     live "/emails", EmailLive.Index, :index
     live "/categories", CategoryLive.Index, :index
     live "/categories/new", CategoryLive.Index, :new
     live "/categories/:category_id", EmailLive.Index, :index
+    live "/gmail-accounts", GmailAccountsLive.Index, :index
     get "/logout", AuthController, :logout
   end
 
@@ -39,6 +44,8 @@ defmodule InboxManagerWeb.Router do
     pipe_through :browser
     get "/:provider", AuthController, :request
     get "/:provider/callback", AuthController, :callback
+    get "/debug", AuthController, :debug_auth
+    get "/force-reauth", AuthController, :force_reauth
   end
 
   # Webhook endpoints for Gmail push notifications

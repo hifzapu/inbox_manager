@@ -14,6 +14,8 @@ defmodule InboxManager.Users.User do
     field :last_known_history_id, :string
     field :token_expires_at, :integer
 
+    has_many :gmail_accounts, InboxManager.GmailAccounts.GmailAccount
+
     timestamps()
   end
 

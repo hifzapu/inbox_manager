@@ -13,6 +13,7 @@ defmodule InboxManager.Emails.Email do
     field :date, :string
     field :description, :string
     belongs_to :category, InboxManager.Categories.Category
+    belongs_to :gmail_account, InboxManager.GmailAccounts.GmailAccount
     belongs_to :user, InboxManager.Users.User
 
     timestamps()
@@ -31,11 +32,13 @@ defmodule InboxManager.Emails.Email do
       :thread_id,
       :date,
       :category_id,
+      :gmail_account_id,
       :user_id,
       :description
     ])
-    |> validate_required([:gmail_id, :subject, :from, :user_id])
+    |> validate_required([:gmail_id, :subject, :from, :gmail_account_id, :user_id])
     |> unique_constraint(:gmail_id)
+    |> foreign_key_constraint(:gmail_account_id)
     |> foreign_key_constraint(:user_id)
   end
 end

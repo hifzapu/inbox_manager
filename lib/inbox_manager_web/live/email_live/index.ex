@@ -29,8 +29,8 @@ defmodule InboxManagerWeb.EmailLive.Index do
 
   @impl true
   def handle_params(%{"category_id" => category_id}, _url, socket) do
-    # Load emails for the specific category
-    emails = Emails.list_emails_by_category(category_id)
+    # Load emails for the specific category and user (user's own account)
+    emails = Emails.list_emails_by_category_and_user_direct(category_id, socket.assigns.user_id)
     category = Categories.get_category!(category_id)
 
     socket =
@@ -50,7 +50,11 @@ defmodule InboxManagerWeb.EmailLive.Index do
 
   @impl true
   def handle_event("refresh", _params, socket) do
-    emails = Emails.list_emails_by_category(socket.assigns.selected_category_id)
+    emails =
+      Emails.list_emails_by_category_and_user_direct(
+        socket.assigns.selected_category_id,
+        socket.assigns.user_id
+      )
 
     {:noreply,
      socket
@@ -112,7 +116,11 @@ defmodule InboxManagerWeb.EmailLive.Index do
       case Emails.delete_emails_by_ids(email_ids) do
         {deleted_count, _} ->
           # Refresh the email list
-          emails = Emails.list_emails_by_category(socket.assigns.selected_category_id)
+          emails =
+            Emails.list_emails_by_category_and_user_direct(
+              socket.assigns.selected_category_id,
+              socket.assigns.user_id
+            )
 
           {:noreply,
            socket
@@ -135,7 +143,12 @@ defmodule InboxManagerWeb.EmailLive.Index do
   @impl true
   def handle_info(%{event: "email:new", email: email}, socket) do
     # Add the new email to the list
-    emails = Emails.list_emails_by_category(socket.assigns.selected_category_id)
+    emails =
+      Emails.list_emails_by_category_and_user_direct(
+        socket.assigns.selected_category_id,
+        socket.assigns.user_id
+      )
+
     # Show a flash message
     socket =
       socket

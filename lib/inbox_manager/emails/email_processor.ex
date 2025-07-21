@@ -8,9 +8,9 @@ defmodule InboxManager.Emails.EmailProcessor do
   alias InboxManager.Emails
   alias InboxManager.Categories
 
-  def process_new_email(access_token, message_id, user) do
+  def process_new_email(access_token, message_id, gmail_account) do
     # Get the full message details from Gmail
-    case GmailClient.get_message_details(access_token, message_id, user.email) do
+    case GmailClient.get_message_details(access_token, message_id, gmail_account.email) do
       {:ok, message_data} ->
         # Extract email content and metadata
         email_data = extract_email_data(message_data)
@@ -19,13 +19,13 @@ defmodule InboxManager.Emails.EmailProcessor do
         description = generate_email_description(email_data)
 
         # Categorize the email using AI
-        category = categorize_email_with_ai(email_data, user.id)
+        category = categorize_email_with_ai(email_data, gmail_account.user_id)
 
         # Store the email in the database with description
-        store_email(email_data, category, user.id, description)
+        store_email(email_data, category, gmail_account.id, description)
 
         # Archive the email in Gmail
-        GmailClient.archive_email(access_token, message_id, user.email)
+        GmailClient.archive_email(access_token, message_id, gmail_account.email)
 
         {:ok, email_data}
 
@@ -156,7 +156,10 @@ defmodule InboxManager.Emails.EmailProcessor do
     end
   end
 
-  defp store_email(email_data, category, user_id, description) do
+  defp store_email(email_data, category, gmail_account_id, description) do
+    # Get the Gmail account to access the user_id
+    gmail_account = InboxManager.GmailAccounts.get_gmail_account!(gmail_account_id)
+
     # Create the email record using the Emails context
     email_params = %{
       gmail_id: email_data.gmail_id,
@@ -168,7 +171,8 @@ defmodule InboxManager.Emails.EmailProcessor do
       thread_id: email_data.thread_id,
       date: email_data.date,
       category_id: if(category, do: category.id, else: nil),
-      user_id: user_id,
+      gmail_account_id: gmail_account_id,
+      user_id: gmail_account.user_id,
       description: description
     }
 

@@ -14,7 +14,50 @@ defmodule InboxManager.Emails do
     Repo.all(
       from e in Email,
         left_join: c in assoc(e, :category),
-        preload: [category: c],
+        left_join: ga in assoc(e, :gmail_account),
+        preload: [category: c, gmail_account: ga],
+        order_by: [desc: e.inserted_at]
+    )
+  end
+
+  @doc """
+  Returns the list of emails for a specific user (across all their Gmail accounts).
+  """
+  def list_emails_by_user(user_id) do
+    Repo.all(
+      from e in Email,
+        left_join: c in assoc(e, :category),
+        left_join: ga in assoc(e, :gmail_account),
+        where: ga.user_id == ^user_id,
+        preload: [category: c, gmail_account: ga],
+        order_by: [desc: e.inserted_at]
+    )
+  end
+
+  @doc """
+  Returns the list of emails directly associated with a user (using user_id field).
+  """
+  def list_emails_by_user_direct(user_id) do
+    Repo.all(
+      from e in Email,
+        left_join: c in assoc(e, :category),
+        left_join: ga in assoc(e, :gmail_account),
+        where: e.user_id == ^user_id,
+        preload: [category: c, gmail_account: ga],
+        order_by: [desc: e.inserted_at]
+    )
+  end
+
+  @doc """
+  Returns the list of emails for a specific Gmail account.
+  """
+  def list_emails_by_gmail_account(gmail_account_id) do
+    Repo.all(
+      from e in Email,
+        left_join: c in assoc(e, :category),
+        left_join: ga in assoc(e, :gmail_account),
+        where: e.gmail_account_id == ^gmail_account_id,
+        preload: [category: c, gmail_account: ga],
         order_by: [desc: e.inserted_at]
     )
   end
@@ -27,8 +70,37 @@ defmodule InboxManager.Emails do
     Repo.all(
       from e in Email,
         left_join: c in assoc(e, :category),
+        left_join: ga in assoc(e, :gmail_account),
         where: e.category_id == ^category_id,
-        preload: [category: c],
+        preload: [category: c, gmail_account: ga],
+        order_by: [desc: e.inserted_at]
+    )
+  end
+
+  @doc """
+  Returns the list of emails filtered by category for a specific user.
+  """
+  def list_emails_by_category_and_user(category_id, user_id) do
+    Repo.all(
+      from e in Email,
+        left_join: c in assoc(e, :category),
+        left_join: ga in assoc(e, :gmail_account),
+        where: e.category_id == ^category_id and ga.user_id == ^user_id,
+        preload: [category: c, gmail_account: ga],
+        order_by: [desc: e.inserted_at]
+    )
+  end
+
+  @doc """
+  Returns the list of emails filtered by category for a specific user (using user_id field directly).
+  """
+  def list_emails_by_category_and_user_direct(category_id, user_id) do
+    Repo.all(
+      from e in Email,
+        left_join: c in assoc(e, :category),
+        left_join: ga in assoc(e, :gmail_account),
+        where: e.category_id == ^category_id and e.user_id == ^user_id,
+        preload: [category: c, gmail_account: ga],
         order_by: [desc: e.inserted_at]
     )
   end

@@ -114,6 +114,27 @@
                   <p class="truncate">
                     {format_date(email.date)}
                   </p>
+                  <%= if email.gmail_account do %>
+                    <span class="mx-2">•</span>
+                    <div class="flex items-center">
+                      <%= if email.gmail_account.image do %>
+                        <img
+                          class="w-4 h-4 rounded-full mr-1"
+                          src={email.gmail_account.image}
+                          alt="Account"
+                        />
+                      <% else %>
+                        <div class="w-4 h-4 rounded-full bg-gray-300 flex items-center justify-center mr-1">
+                          <span class="text-xs font-medium text-gray-700">
+                            {String.first(email.gmail_account.email) |> String.upcase()}
+                          </span>
+                        </div>
+                      <% end %>
+                      <span class="text-xs text-gray-400">
+                        {email.gmail_account.email}
+                      </span>
+                    </div>
+                  <% end %>
                 </div>
                 <%= if email.description && email.description != "" do %>
                   <p class="mt-1 text-sm text-gray-600">

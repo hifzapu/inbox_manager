@@ -85,6 +85,7 @@ config :ueberauth, Ueberauth,
        [
          default_scope: "email profile https://www.googleapis.com/auth/gmail.modify",
          access_type: "offline",
+         prompt: "consent",
          include_granted_scopes: true
        ]}
   ]
