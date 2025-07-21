@@ -23,6 +23,7 @@ defmodule InboxManagerWeb.EmailLive.Index do
       |> assign(:user_id, current_user.id)
       |> assign(:selected_emails, MapSet.new())
       |> assign(:select_all, false)
+      |> assign(:selected_email, nil)
 
     {:ok, socket}
   end
@@ -137,6 +138,17 @@ defmodule InboxManagerWeb.EmailLive.Index do
     else
       {:noreply, socket}
     end
+  end
+
+  @impl true
+  def handle_event("show_email", %{"id" => id}, socket) do
+    email = Enum.find(socket.assigns.emails, &(&1.id == String.to_integer(id)))
+    {:noreply, assign(socket, :selected_email, email)}
+  end
+
+  @impl true
+  def handle_event("close_email", _params, socket) do
+    {:noreply, assign(socket, :selected_email, nil)}
   end
 
   # Handle real-time email updates

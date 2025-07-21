@@ -160,7 +160,10 @@ defmodule InboxManagerWeb.AuthController do
 
       existing_gmail_account ->
         # Update existing Gmail account with new tokens
-        case GmailAccounts.update_gmail_account(existing_gmail_account, gmail_account_attrs) do
+        case GmailAccounts.update_gmail_account(
+               existing_gmail_account,
+               Map.put(gmail_account_attrs, :is_active, true)
+             ) do
           {:ok, updated_gmail_account} ->
             # Refresh push notifications and get new history ID
             case GmailClient.setup_push_notifications(
@@ -226,9 +229,9 @@ defmodule InboxManagerWeb.AuthController do
         case handle_gmail_account_connection(user, gmail_account_attrs) do
           {:ok, _gmail_account} ->
             conn
-            |> put_flash(:info, "Gmail account connected successfully!")
+            |> put_flash(:info, "Welcome to Inbox Manager!")
             |> put_session(:current_user, user)
-            |> redirect(to: "/gmail-accounts")
+            |> redirect(to: "/categories")
 
           {:error, _error} ->
             conn

@@ -16,10 +16,20 @@ defmodule InboxManager.ApiClients.GroqClient do
   def generate_description_with_groq(prompt) do
     make_groq_request(
       prompt,
-      "You are an email analysis assistant. Provide clear, descriptive explanations of email content in 10-15 words. Focus on the main purpose and key points of the email.",
+      "You are an email analysis assistant. Summarize the main point of the email in 10-15 words. Be concise and clear.",
       0.3,
       100,
       "Email description unavailable"
+    )
+  end
+
+  def unsubscribe_with_groq(prompt) do
+    make_groq_request(
+      prompt,
+      "You are an AI email assistant. Your job is to actually unsubscribe the user from this email. Find the best unsubscribe link in the following email, visit it, and if there is a form, fill it out and submit it to complete the unsubscribe process. If you cannot unsubscribe, explain why. Return the result of your attempt (success/failure and any relevant details)",
+      0.1,
+      100,
+      "Unsubscribe link not found"
     )
   end
 

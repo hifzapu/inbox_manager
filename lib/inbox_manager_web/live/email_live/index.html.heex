@@ -37,6 +37,22 @@
               </svg>
               Delete Selected ({MapSet.size(@selected_emails)})
             </button>
+            <button
+              phx-click="unsubscribe_selected"
+              data-confirm="Are you sure you want to unsubscribe from #{MapSet.size(@selected_emails)} selected email(s)?"
+              class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 ml-2"
+            >
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                >
+                </path>
+              </svg>
+              Unsubscribe ({MapSet.size(@selected_emails)})
+            </button>
           <% end %>
         </div>
       <% end %>
@@ -85,7 +101,11 @@
       <ul class="divide-y divide-gray-200">
         <%= for email <- @emails do %>
           <% is_selected = MapSet.member?(@selected_emails, email.id) %>
-          <li class={"px-6 py-4 #{if is_selected, do: "bg-indigo-50 border-l-4 border-indigo-400", else: "hover:bg-gray-50"}"}>
+          <li
+            class={"px-6 py-4 cursor-pointer #{if is_selected, do: "bg-indigo-50 border-l-4 border-indigo-400", else: "hover:bg-gray-50"}"}
+            phx-click="show_email"
+            phx-value-id={email.id}
+          >
             <div class="flex items-center justify-between">
               <!-- Email Selection Checkbox -->
               <div class="flex items-center mr-4">
@@ -97,9 +117,9 @@
                   phx-click="select_email"
                   phx-value-id={email.id}
                   class="rounded border-gray-300 text-black shadow-sm focus:border-gray-300 focus:ring focus:ring-gray-200 focus:ring-opacity-50"
+                  phx-stop-propagation
                 />
               </div>
-
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <p class="text-sm font-medium text-gray-900 truncate">
@@ -157,3 +177,24 @@
     </div>
   </div>
 </div>
+
+<%= if @selected_email do %>
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-8 rounded-lg max-w-2xl w-full shadow-lg relative">
+      <button
+        phx-click="close_email"
+        class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-2xl"
+      >
+        &times;
+      </button>
+      <h2 class="text-xl font-bold mb-2">{@selected_email.subject}</h2>
+      <div class="mb-2 text-sm text-gray-500">
+        <div>From: {@selected_email.from}</div>
+        <div>To: {@selected_email.to}</div>
+        <div>Date: {@selected_email.date}</div>
+      </div>
+      <hr class="my-2" />
+      <pre class="whitespace-pre-wrap text-gray-800 text-sm max-h-96 overflow-auto"><%= @selected_email.body %></pre>
+    </div>
+  </div>
+<% end %>

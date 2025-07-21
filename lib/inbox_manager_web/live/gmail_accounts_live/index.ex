@@ -49,7 +49,9 @@ defmodule InboxManagerWeb.GmailAccountsLive.Index do
     # Deactivate the account
     {:ok, _} = GmailAccounts.deactivate_gmail_account(gmail_account)
 
-    gmail_accounts = GmailAccounts.list_gmail_accounts(socket.assigns.current_user.id)
+    gmail_accounts =
+      GmailAccounts.list_gmail_accounts(socket.assigns.current_user.id)
+      |> Enum.reject(fn account -> account.email == socket.assigns.current_user.email end)
 
     {:noreply,
      socket
